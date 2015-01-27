@@ -2,6 +2,7 @@ import requests
 import sqlite3
 import time
 import string
+from urllib.parse import urljoin
 import code
 from bs4 import BeautifulSoup
 
@@ -9,36 +10,49 @@ from bs4 import BeautifulSoup
 def prepare():
     # Create database, table and index
     create_string = '''
-            CREATE TABLE IF NOT EXISTS geetabitan_links
-            (
-                song_name string, song_link string,
-                translation_available integer,
-                created_at integer, updated_at integer,
-                lyric text, english_lyric text, notes text, notation text,
-                staff_notation text, english_translation text
-            )
+        CREATE TABLE IF NOT EXISTS geetabitan_links
+        (
+            song_name string, song_link string,
+            translation_available integer,
+            created_at integer, updated_at integer,
+            lyric text, english_lyric text, notes text, notation text,
+            staff_notation text, english_translation text
+        )
     '''
     c.execute(create_string)
     index_string = "CREATE UNIQUE INDEX IF NOT EXISTS UniqueSongLinks ON geetabitan_links (song_link)"
     c.execute(index_string)
 
-def index_spider():
-    base_url = "http://www.geetabitan.com/lyrics/"
-    url = base_url + "/index.html"
+def request(url):
     source_code = requests.get(url)
     plain_text = source_code.text
-    soup = BeautifulSoup(plain_text)
+    return BeautifulSoup(plain_text)
 
-    code.interact(local=locals())
-    subpage = soup.find("div", class_="alphabet")
-    song_list_urls = []
-    for link in subpage.find_all("a"):
-        page_link = base_url + "/" + link.get('href')
-        song_list_urls.append(page_link)
+def index_spider():
+    base_url = "http://www.geetabitan.com/lyrics/"
+    url = urljoin(base_url, "index.html")
+    soup = request(url)
+
+    song_list_urls = {}
+    for link in soup.select(".alphabet > ul > li > a"):
+        page_name = link.get_text()
+        page_link = urljoin(base_url, link.get('href'))
+        song_list_urls[page_name] = page_link
     song_list_spider(song_list_urls)
 
 def song_list_spider(urls):
-    print()
+    for index, url in urls.items():
+        soup = request(url)
+        song_urls = []
+        for link in soup.select(".lyricsname > div > ul > li > a"):
+            base_url = urljoin("http://www.geetabitan.com/lyrics/", index + '/')
+            page_link = urljoin(base_url, link.get('href'))
+            song_urls.append(page_link)
+        print(song_urls)
+        # song_spider(song_urls)
+
+
+
 
 # Initialize
 conn = sqlite3.connect("geetabitan.db")
