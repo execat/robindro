@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 def song_list_spider(letters):
     # Create database and table
-    conn = sqlite3.connect("testing.db")
+    conn = sqlite3.connect("geetabitan.db")
     c = conn.cursor()
     create_string = '''
             CREATE TABLE geetabitan_links
