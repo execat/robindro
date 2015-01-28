@@ -62,6 +62,74 @@ def song_list_spider(song_list_urls):
         song_spider(song_urls)
 
 def song_spider(song_urls):
+
+    # Extractor methods
+    def extract_lyric(content):
+        try:
+            return content.find(id="faq1").find("pre").get_text()
+        except AttributeError:
+            errors.append([song_name, song_url, 'extract_lyric', e])
+            return None
+
+    def extract_notes(content):
+        try:
+            return content.find(id="faq2").get_text()
+        except:
+            errors.append([song_name, song_url, 'extract_notes', e])
+            return None
+
+    def extract_notation_url(content, url):
+        a = content.find(id="faq3")
+        try:
+            if a.get_text().find("Notation not available.") > -1:
+                return None
+            return urljoin(url, a.find("p").find("img").get("src"))
+        except AttributeError:
+            errors.append([song_name, song_url, 'extract_notation', e])
+            return None
+
+    def extract_staff(content, url):
+        try:
+            links = content.find(id="faq4").find_all("a")
+            pdf_link = midi_link = ""
+            for link in links:
+                if link.get("href").find('pdf/') == 0:
+                    pdf_link_rel = link.get("href")
+                    pdf_link = urljoin(url, pdf_link_rel)
+                if link.get("href").find('midi/') == 0:
+                    midi_link_rel = link.get("href")
+                    midi_link = urljoin(url, midi_link_rel)
+            return (pdf_link, midi_link)
+        except AttributeError:
+            errors.append([song_name, song_url, 'extract_staff', e])
+            return None
+
+    def extract_english_lyric(content):
+        try:
+            return content.find("div", id="faq5").find("pre").get_text()
+        except AttributeError:
+            errors.append([song_name, song_url, 'extract_english_lyric', e])
+            return None
+
+    def extract_english_trans(content):
+        try:
+            string_value = content.find(id="faq6").find("pre").get_text()
+            if string_value.find("Will be available soon but if someone requires it please contact.") < 0:
+                return string_value
+        except AttributeError:
+            errors.append([song_name, song_url, 'extract_english_trans', e])
+            return None
+
+    def extract_listen(content, url):
+        try:
+            link = content.find(id="faq7").find("a").get("href")
+            if link.find("sendyoursong.html") > -1:
+                return None
+            return urljoin(url, link)
+        except AttributeError:
+            errors.append([song_name, song_url, 'extract_listen', e])
+            return None
+
     insert_array = []
     for song_name, url in song_urls.items():
         soup = request(url)
@@ -80,7 +148,6 @@ def song_spider(song_urls):
             except Exception as e:
                 errors.append([song_name, song_url, 'song_spider', e])
     push_array(insert_array)
-
 
 def push_array(insert_array):
     conn = sqlite3.connect("geetabitan.db")
@@ -104,73 +171,6 @@ def push_song(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_ur
     finally:
         conn.commit()
         conn.close()
-
-# Extractor methods
-def extract_lyric(content):
-    try:
-        return content.find(id="faq1").find("pre").get_text()
-    except AttributeError:
-        errors.append([song_name, song_url, 'extract_lyric', e])
-        return None
-
-def extract_notes(content):
-    try:
-        return content.find(id="faq2").get_text()
-    except:
-        errors.append([song_name, song_url, 'extract_notes', e])
-        return None
-
-def extract_notation_url(content, url):
-    a = content.find(id="faq3")
-    try:
-        if a.get_text().find("Notation not available.") > -1:
-            return None
-        return urljoin(url, a.find("p").find("img").get("src"))
-    except AttributeError:
-        errors.append([song_name, song_url, 'extract_notation', e])
-        return None
-
-def extract_staff(content, url):
-    try:
-        links = content.find(id="faq4").find_all("a")
-        pdf_link = midi_link = ""
-        for link in links:
-            if link.get("href").find('pdf/') == 0:
-                pdf_link_rel = link.get("href")
-                pdf_link = urljoin(url, pdf_link_rel)
-            if link.get("href").find('midi/') == 0:
-                midi_link_rel = link.get("href")
-                midi_link = urljoin(url, midi_link_rel)
-        return (pdf_link, midi_link)
-    except AttributeError:
-        errors.append([song_name, song_url, 'extract_staff', e])
-        return None
-
-def extract_english_lyric(content):
-    try:
-        return content.find("div", id="faq5").find("pre").get_text()
-    except AttributeError:
-        errors.append([song_name, song_url, 'extract_english_lyric', e])
-        return None
-
-def extract_english_trans(content):
-    try:
-        string_value = content.find(id="faq6").find("pre").get_text()
-        if string_value.find("Will be available soon but if someone requires it please contact.") < 0:
-            return string_value
-    except AttributeError:
-        errors.append([song_name, song_url, 'extract_english_trans', e])
-        return None
-
-def extract_listen(content, url):
-    try:
-        link = content.find(id="faq7").find("a").get("href")
-        if link.find("sendyoursong.html") > -1:
-            return None
-        return urljoin(url, link)
-    except AttributeError:
-        errors.append([song_name, song_url, 'extract_listen', e])
-        return None
 
 # Process
 prepare()
