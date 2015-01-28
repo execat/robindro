@@ -62,20 +62,19 @@ def song_list_spider(song_list_urls):
         song_spider(song_urls)
 
 def song_spider(song_urls):
-
     # Extractor methods
     def extract_lyric(content):
         try:
             return content.find(id="faq1").find("pre").get_text()
-        except AttributeError:
-            errors.append([song_name, song_url, 'extract_lyric', e])
+        except AttributeError as e:
+            errors.append([song_name, song_link, 'extract_lyric', e])
             return None
 
     def extract_notes(content):
         try:
             return content.find(id="faq2").get_text()
         except:
-            errors.append([song_name, song_url, 'extract_notes', e])
+            errors.append([song_name, song_link, 'extract_notes', e])
             return None
 
     def extract_notation_url(content, url):
@@ -84,8 +83,8 @@ def song_spider(song_urls):
             if a.get_text().find("Notation not available.") > -1:
                 return None
             return urljoin(url, a.find("p").find("img").get("src"))
-        except AttributeError:
-            errors.append([song_name, song_url, 'extract_notation', e])
+        except AttributeError as e:
+            errors.append([song_name, song_link, 'extract_notation', e])
             return None
 
     def extract_staff(content, url):
@@ -100,15 +99,15 @@ def song_spider(song_urls):
                     midi_link_rel = link.get("href")
                     midi_link = urljoin(url, midi_link_rel)
             return (pdf_link, midi_link)
-        except AttributeError:
-            errors.append([song_name, song_url, 'extract_staff', e])
+        except AttributeError as e:
+            errors.append([song_name, song_link, 'extract_staff', e])
             return None
 
     def extract_english_lyric(content):
         try:
             return content.find("div", id="faq5").find("pre").get_text()
-        except AttributeError:
-            errors.append([song_name, song_url, 'extract_english_lyric', e])
+        except AttributeError as e:
+            errors.append([song_name, song_link, 'extract_english_lyric', e])
             return None
 
     def extract_english_trans(content):
@@ -116,8 +115,8 @@ def song_spider(song_urls):
             string_value = content.find(id="faq6").find("pre").get_text()
             if string_value.find("Will be available soon but if someone requires it please contact.") < 0:
                 return string_value
-        except AttributeError:
-            errors.append([song_name, song_url, 'extract_english_trans', e])
+        except AttributeError as e:
+            errors.append([song_name, song_link, 'extract_english_trans', e])
             return None
 
     def extract_listen(content, url):
@@ -126,8 +125,8 @@ def song_spider(song_urls):
             if link.find("sendyoursong.html") > -1:
                 return None
             return urljoin(url, link)
-        except AttributeError:
-            errors.append([song_name, song_url, 'extract_listen', e])
+        except AttributeError as e:
+            errors.append([song_name, song_link, 'extract_listen', e])
             return None
 
     insert_array = []
@@ -146,7 +145,7 @@ def song_spider(song_urls):
                 print(song_name, song_link)
                 insert_array.append((song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url, time.time()))
             except Exception as e:
-                errors.append([song_name, song_url, 'song_spider', e])
+                errors.append([song_name, song_link, 'song_spider', e])
     push_array(insert_array)
 
 def push_array(insert_array):
@@ -154,33 +153,21 @@ def push_array(insert_array):
     c = conn.cursor()
     try:
         c.executemany("INSERT INTO geetabitan_links (song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", insert_array)
-    except sqlite3.OperationalError as exception:
-        errors.append([song_name, song_url, 'song_spider', e])
-    finally:
-        conn.commit()
-        conn.close()
-
-def push_song(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url):
-    conn = sqlite3.connect("geetabitan.db")
-    c = conn.cursor()
-    insert_array = [(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url, time.time())]
-    try:
-        c.executemany("INSERT INTO geetabitan_links (song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", insert_array)
-    except sqlite3.OperationalError as exception:
-        errors.append([song_name, song_url, 'song_spider', e])
+    except sqlite3.OperationalError as e:
+        errors.append([song_name, song_link, 'push_array', e])
     finally:
         conn.commit()
         conn.close()
 
 # Process
 prepare()
-
 index_spider()
+
 # For testing a song list:
-# song_list_spider({'U': 'http://www.geetabitan.com/lyrics/U/song-list.html'})
+# song_list_spider({'S': 'http://www.geetabitan.com/lyrics/S/song-list.html'})
 # For testing a song page:
 # song_spider({'Shunyo Pran Kaade Soda': 'http://www.geetabitan.com/lyrics/S/shunyo-pran-kaade-soda.html'})
+# song_spider({'Sakalere Kaachhe Daaki': 'http://www.geetabitan.com/lyrics/S/sakalere-kaachhe-daaki.html'})
 
 # Error reporting
 print(errors)
-code.interact(local=locals())
