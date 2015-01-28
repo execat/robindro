@@ -67,14 +67,12 @@ def song_spider(song_urls):
         try:
             return content.find(id="faq1").find("pre").get_text()
         except AttributeError as e:
-            errors.append([song_name, song_link, 'extract_lyric', e])
             return None
 
     def extract_notes(content):
         try:
             return content.find(id="faq2").get_text()
         except:
-            errors.append([song_name, song_link, 'extract_notes', e])
             return None
 
     def extract_notation_url(content, url):
@@ -84,7 +82,6 @@ def song_spider(song_urls):
                 return None
             return urljoin(url, a.find("p").find("img").get("src"))
         except AttributeError as e:
-            errors.append([song_name, song_link, 'extract_notation', e])
             return None
 
     def extract_staff(content, url):
@@ -100,14 +97,12 @@ def song_spider(song_urls):
                     midi_link = urljoin(url, midi_link_rel)
             return (pdf_link, midi_link)
         except AttributeError as e:
-            errors.append([song_name, song_link, 'extract_staff', e])
             return None
 
     def extract_english_lyric(content):
         try:
             return content.find("div", id="faq5").find("pre").get_text()
         except AttributeError as e:
-            errors.append([song_name, song_link, 'extract_english_lyric', e])
             return None
 
     def extract_english_trans(content):
@@ -116,7 +111,6 @@ def song_spider(song_urls):
             if string_value.find("Will be available soon but if someone requires it please contact.") < 0:
                 return string_value
         except AttributeError as e:
-            errors.append([song_name, song_link, 'extract_english_trans', e])
             return None
 
     def extract_listen(content, url):
@@ -126,7 +120,6 @@ def song_spider(song_urls):
                 return None
             return urljoin(url, link)
         except AttributeError as e:
-            errors.append([song_name, song_link, 'extract_listen', e])
             return None
 
     insert_array = []
@@ -161,13 +154,14 @@ def push_array(insert_array):
 
 # Process
 prepare()
-index_spider()
+# index_spider()
 
 # For testing a song list:
 # song_list_spider({'S': 'http://www.geetabitan.com/lyrics/S/song-list.html'})
 # For testing a song page:
 # song_spider({'Shunyo Pran Kaade Soda': 'http://www.geetabitan.com/lyrics/S/shunyo-pran-kaade-soda.html'})
 # song_spider({'Sakalere Kaachhe Daaki': 'http://www.geetabitan.com/lyrics/S/sakalere-kaachhe-daaki.html'})
+song_spider({'Or Maaner E Bnaadh Tutbe': 'http://www.geetabitan.com/lyrics/O/or-maaner-e-bnaadh-tutbe.html' })
 
 # Error reporting
 print(errors)
