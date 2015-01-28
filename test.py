@@ -14,9 +14,13 @@ def prepare():
         (
             song_name string, song_link string,
             translation_available integer,
-            created_at integer, updated_at integer,
-            lyric text, english_lyric text, notes text, notation text,
-            staff_notation text, english_translation text
+            created_at numeric, updated_at numeric,
+            lyric text, english_lyric text, notes text,
+            english_translation text
+            notation_url string, notation_path string,
+            pdf_url string, pdf_path string,
+            midi_url string, midi_path string,
+            listen_url string, listen_path string
         )
     '''
     c.execute(create_string)
@@ -40,31 +44,40 @@ def index_spider():
         song_list_urls[page_name] = page_link
     song_list_spider(song_list_urls)
 
-def song_list_spider(urls):
-    for index, url in urls.items():
+def song_list_spider(song_list_urls):
+    for song_list_index, url in song_list_urls.items():
         soup = request(url)
-        song_urls = []
+        song_urls = {}
         for link in soup.select(".lyricsname > div > ul > li > a"):
-            base_url = urljoin("http://www.geetabitan.com/lyrics/", index + '/')
+            base_url = urljoin("http://www.geetabitan.com/lyrics/", song_list_index + '/')
+            page_name = link.get_text()
             page_link = urljoin(base_url, link.get('href'))
-            song_urls.append(page_link)
+            song_urls[page_name] = page_link
         song_spider(song_urls)
 
 def song_spider(song_urls):
-    for url in song_urls:
+    for song_name, url in song_urls.items():
         soup = request(url)
         for content in soup.select(".songmatter"):
+            song_link = url
             lyric = extract_lyric(content)
             notes = extract_notes(content)
             notation_url = extract_notation_url(content, url)
-            pdf_link, midi_link = extract_staff(content, url)
+            pdf_url, midi_url = extract_staff(content, url)
             english_lyric = extract_english_lyric(content)
             english_trans = extract_english_trans(content)
-            listen = extract_listen(content, url)
-            push_song(lyric, notes, notation, staff, english_lyric, english_trans, listen)
+            listen_url = extract_listen(content, url)
+            # code.interact(local=locals())
+            push_song(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_trans, listen_url)
 
-def push_song(lyric, notes, notation, staff, english_lyric, english_trans, listen):
-    pass
+def push_song(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_trans, listen_url):
+    insert_string = """
+        INSERT INTO geetabitan_links
+        (song_name, song_link, created_at, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_trans, listen_url)
+        VALUES
+        ('%s', '%s', %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+    """ %(song_name, song_link, time.time(), lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_trans, listen_url)
+    c.execute(insert_string)
 
 # Extractor methods
 def extract_lyric(content):
@@ -92,7 +105,6 @@ def extract_staff(content, url):
         if link.get("href").find('midi/') == 0:
             midi_link_rel = link.get("href")
             midi_link = urljoin(url, midi_link_rel)
-    code.interact(local=locals())
     return (pdf_link, midi_link)
 
 def extract_english_lyric(content):
