@@ -16,7 +16,7 @@ def prepare():
             translation_available integer,
             created_at numeric, updated_at numeric,
             lyric text, english_lyric text, notes text,
-            english_translation text
+            english_translation text,
             notation_url string, notation_path string,
             pdf_url string, pdf_path string,
             midi_url string, midi_path string,
@@ -65,19 +65,28 @@ def song_spider(song_urls):
             notation_url = extract_notation_url(content, url)
             pdf_url, midi_url = extract_staff(content, url)
             english_lyric = extract_english_lyric(content)
-            english_trans = extract_english_trans(content)
+            english_translation = extract_english_trans(content)
             listen_url = extract_listen(content, url)
             # code.interact(local=locals())
-            push_song(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_trans, listen_url)
+            push_song(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url)
 
-def push_song(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_trans, listen_url):
+def push_song(song_name, song_link, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url):
     insert_string = """
         INSERT INTO geetabitan_links
-        (song_name, song_link, created_at, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_trans, listen_url)
+        (song_name, song_link, created_at, lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url)
         VALUES
         ('%s', '%s', %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
-    """ %(song_name, song_link, time.time(), lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_trans, listen_url)
-    c.execute(insert_string)
+    """ %(song_name, song_link, time.time(), lyric, notes, notation_url, pdf_url, midi_url, english_lyric, english_translation, listen_url)
+    try:
+        c.execute(insert_string)
+    except sqlite3.OperationalError as exception:
+        print("Log: ----------------")
+        print(song_name, song_link)
+        print(insert_string)
+        print(type(exception))
+        print(exception.args)
+        print(exception)
+        print("Log ends: ----------------")
 
 # Extractor methods
 def extract_lyric(content):
@@ -135,3 +144,5 @@ index_spider()
 # Destroy
 conn.commit()
 conn.close()
+
+print(error_count)
