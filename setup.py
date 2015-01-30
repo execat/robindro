@@ -3,7 +3,10 @@
 
 import os
 import setuptools
-# import sys
+import sys
+
+if os.path.exists('robindro'):
+    sys.path.insert(0, '.')
 
 version_file_path = os.path.join(
     os.path.dirname(__file__),
@@ -50,9 +53,7 @@ setuptools.setup(
     license='GPL',
     long_description=long_description,
     name='Robindro',
-    packages=(
-        'robindro',
-    ),
+    packages=('robindro', 'robindro.scripts', 'robindro.scraper'),
     platforms='Any',
     url='http://github.com/execat/robindro',
     version=__version__,

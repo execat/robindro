@@ -9,8 +9,6 @@ Provides Robindro version information
 # a proper version while editing the version number
 
 def version_string(info):
-    import code
-    code.interact(local=locals())
     product_version = '.'.join(info[0:3])
     if len(info) == 4:
         return product_version + "-" + info[3]

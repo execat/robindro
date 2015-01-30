@@ -2,6 +2,9 @@
 # Copyright (c) Anuj More
 # See LICENSE.md for details.
 
+import code
+code.interact(local=locals())
+
 from robindro.scripts import robindro
 
-robindro.run()
+pass
