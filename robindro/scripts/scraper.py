@@ -1,3 +1,3 @@
 import sys, getpass
 
-from robindro.scrape import app
+from robindro.scraper import app

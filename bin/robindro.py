@@ -1,15 +1,7 @@
 #!/usr/bin/env python
-# Copyright (c) Twisted Matrix Laboratories.
-# See LICENSE for details.
+# Copyright (c) Anuj More
+# See LICENSE.md for details.
 
-import os, sys
+from robindro.scripts import robindro
 
-try:
-    import _preamble
-except ImportError:
-    sys.exc_clear()
-
-sys.path.insert(0, os.path.abspath(os.getcwd()))
-
-def run():
-    print("To be implemented")
+robindro.run()
