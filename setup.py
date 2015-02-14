@@ -73,29 +73,29 @@ else:
     }
 
     if setuptools_available:
-        params['entry_points'] = {'console_scripts': ['youtube-dl = youtube_dl:main']}
+        params['entry_points'] = {'console_scripts': ['robindro = robindro:main']}
     else:
-        params['scripts'] = ['bin/youtube-dl']
+        params['scripts'] = ['bin/robindro']
 
 # Get the version from youtube_dl/version.py without importing the package
 exec(compile(open('robindro/version.py').read(),
              'robindro/version.py', 'exec'))
 
 setup(
-    name='youtube_dl',
+    name='robindro',
     version=__version__,
-    description='YouTube video downloader',
-    long_description='Small command-line program to download videos from'
-    ' YouTube.com and other video sites.',
-    url='https://github.com/rg3/youtube-dl',
-    author='Ricardo Garcia',
-    author_email='ytdl@yt-dl.org',
-    maintainer='Philipp Hagemeister',
-    maintainer_email='phihag@phihag.de',
+    description='Rabindranath Tagore info organizer',
+    long_description='Small command-line program to download transations and '
+    ' song metadata for Rabindranath Tagore\'s works from various websites.',
+    url='https://github.com/execat/robindro',
+    author='Anuj More',
+    author_email='anujmorex+robindro@gmail.com',
+    maintainer='Anuj More',
+    maintainer_email='anujmorex+robindro@gmail.com',
     packages=[
-        'youtube_dl',
-        'youtube_dl.extractor', 'youtube_dl.downloader',
-        'youtube_dl.postprocessor'],
+        'robindro',
+        'robindro.extractor', 'robindro.downloader',
+        'robindro.postprocessor'],
 
     # Provokes warning on most systems (why?!)
     # test_suite = 'nose.collector',
