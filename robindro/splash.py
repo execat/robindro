@@ -1,30 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
 
-import sys
-import robindro.splash
-
-
-def _real_main(argv=None):
-    robindro.splash.show()
-
-
-def main(argv=None):
-    try:
-        _real_main(argv)
-    except Exception:
-        sys.exit('ERROR: fixed output name but more than one file to download')
-    except KeyboardInterrupt:
-        sys.exit('\nERROR: Interrupted by user')
-
-
-__all__ = ['main']
-
-
-# PRIVATE
-def print_splash():
+def show():
     string = """
 88888888888888888888888888888888888888888888888888888888888888888888888888888
 88888888888888888888888888888888888888888888888888888888888888888888888888888

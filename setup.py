@@ -77,7 +77,7 @@ else:
     else:
         params['scripts'] = ['bin/robindro']
 
-# Get the version from youtube_dl/version.py without importing the package
+# Get the version from robindro/version.py without importing the package
 exec(compile(open('robindro/version.py').read(),
              'robindro/version.py', 'exec'))
 
