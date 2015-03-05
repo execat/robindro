@@ -1,7 +1,7 @@
 import sqlite3
 import string
-import code
 import re
+import code
 from bs4 import BeautifulSoup
 
 errors = []
@@ -15,7 +15,8 @@ def prepare():
     create_string = '''
         CREATE TABLE IF NOT EXISTS marathi_words
         (
-            letter string, word string, english_annotation string, data string
+            letter string, word string, english_annotation string, data string,
+            UNIQUE(word)
         )
     '''
     index_string_words = '''
@@ -42,9 +43,10 @@ def __push_array(insert_array):
     conn = sqlite3.connect("marathi.db")
     c = conn.cursor()
     try:
+        code.interact(local=locals())
         execute_many_string = '''
-            INSERT INTO marathi_words (letter, word, english_annotation, data)
-            VALUES (?, ?, ?, ?)
+            INSERT OR IGNORE INTO marathi_words (letter, word,
+            english_annotation, data) VALUES (?, ?, ?, ?)
         '''
         c.executemany(execute_many_string, insert_array)
     except sqlite3.OperationalError as e:
@@ -68,19 +70,20 @@ def page_parser(file_path):
     print("Processing %s elements in %s" % (len(content_array), file_path))
     for content in content_array:
         def extract_letter(content):
-            pass
+            return '0'
 
         def extract_word(content):
-            content.font.string
+            return str(content.font.string)
 
         def extract_english_annotation(content):
-            re.search('\[(.*)\]', str(content)).group(1).strip()
+            return re.search('\[(.*)\]', str(content)).group(1).strip()
 
         def extract_data(content):
-            "rofl"
+            content.font.extract()
+            content.a.extract()
+            return str(content)
 
         try:
-            code.interact(local=locals())
             letter = extract_letter(content)
             word = extract_word(content)
             english_annotation = extract_english_annotation(content)
@@ -95,7 +98,8 @@ def page_parser(file_path):
 # Process
 prepare()
 file_paths = map(lambda letter: 'marathi_dict/%s.html' % letter,
-                 string.ascii_lowercase)
+                 # string.ascii_lowercase)
+                 filter(lambda x: x in ['q', 'd'], string.ascii_lowercase))
 parse_files(file_paths)
 
 # Error reporting
